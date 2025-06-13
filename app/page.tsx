@@ -24,8 +24,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">
+              <Image
+              src="logo.webp"
+              alt="logo"
+              height={50}
+              width={40}
+              />
+              <h1 className="ml-3 text-2xl font-bold text-gray-900">
                 Family Tree Viewer
               </h1>
             </div>
@@ -55,7 +60,7 @@ export default function HomePage() {
 
               <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
-                  href="/register"
+                  href="/auth/signin"
                   className="rounded-md bg-green-600 px-6 py-3 text-white font-medium hover:bg-green-700 transition"
                 >
                   Start Building
