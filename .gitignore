@@ -57,8 +57,8 @@ logs
 *.sqlite
 
 # Uploads
-/uploads/
-/public/uploads/
+# /uploads/
+# /public/uploads/
 
 # Temporary files
 /tmp/
