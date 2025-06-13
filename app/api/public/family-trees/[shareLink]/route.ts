@@ -4,13 +4,24 @@ import FamilyTree from "@/models/FamilyTree";
 import Member from "@/models/Member";
 import Relationship from "@/models/Relationship";
 import User from "@/models/User";
+import { getTokenFromRequest, verifyFirebaseToken } from "../../../../../lib/auth/verify-token";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { shareLink: string } }
 ) {
   try {
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
     await connectDB();
+
 
     const tree = await FamilyTree.findOne({
       shareLink: params.shareLink,

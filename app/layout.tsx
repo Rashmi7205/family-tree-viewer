@@ -2,14 +2,13 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/contexts/auth-context"
+import { AuthProvider } from "../lib/auth/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Family Tree Viewer",
+  title: "DugraDham Family Tree Viewer",
   description: "Build, visualize, and share your family history",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({

@@ -3,8 +3,9 @@ import { z } from "zod"
 import connectDB from "@/lib/mongodb"
 import FamilyTree from "@/models/FamilyTree"
 import Member from "@/models/Member"
-import { requireAuth } from "@/lib/auth"
 import { logAudit } from "@/lib/audit"
+import { getTokenFromRequest, verifyFirebaseToken } from "../../../../../lib/auth/verify-token"
+import User from "../../../../../models/User"
 
 const createMemberSchema = z.object({
   firstName: z.string().min(1),
@@ -18,8 +19,17 @@ const createMemberSchema = z.object({
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await connectDB()
-    const user = await requireAuth(request)
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+    await connectDB();
+    const user = await User.findOne({ uid: decodedToken.user_id });
     const body = await request.json()
     const data = createMemberSchema.parse(body)
 

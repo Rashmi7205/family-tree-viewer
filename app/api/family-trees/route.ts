@@ -4,8 +4,9 @@ import connectDB from "@/lib/mongodb"
 import FamilyTree from "@/models/FamilyTree"
 import Member from "@/models/Member"
 import Relationship from "@/models/Relationship"
-import { requireAuth } from "@/lib/auth"
 import { logAudit } from "@/lib/audit"
+import User from "../../../models/User"
+import { getTokenFromRequest, verifyFirebaseToken } from "../../../lib/auth/verify-token"
 
 const createTreeSchema = z.object({
   name: z.string().min(1),
@@ -15,8 +16,21 @@ const createTreeSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB()
-    const user = await requireAuth(request)
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    // Connect to database
+    await connectDB();
+
+    // Find user by Firebase UID
+    const user = await User.findOne({ uid: decodedToken.user_id });
 
     const trees = await FamilyTree.find({ userId: user.id }).sort({ updatedAt: -1 }).lean()
 
@@ -46,8 +60,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
-    const user = await requireAuth(request)
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    // Connect to database
+    await connectDB();
+
+    // Find user by Firebase UID
+    const user = await User.findOne({ uid: decodedToken.user_id });
+
     const body = await request.json()
     const data = createTreeSchema.parse(body)
 

@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Save, X, Users, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../../lib/auth/auth-context";
 
 interface Member {
   id: string;
@@ -101,7 +102,7 @@ export function AddRelationshipModal({
     });
     setError("");
   };
-
+  const {user} = useAuth();
   useEffect(() => {
     if (isOpen) {
       resetForm();
@@ -222,12 +223,13 @@ export function AddRelationshipModal({
     setIsLoading(true);
 
     try {
+      const token = user?.accessToken;
       const response = await fetch(
         `/api/family-trees/${familyTreeId}/relationships`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           credentials: "include",
           body: JSON.stringify(formData),

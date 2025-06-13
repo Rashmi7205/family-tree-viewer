@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Save, X, TreePine, Globe, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../../lib/auth/auth-context";
 
 interface CreateTreeModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export function CreateTreeModal({
     description: "",
     isPublic: false,
   });
+  const {user} = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -46,12 +48,11 @@ export function CreateTreeModal({
     setIsLoading(true);
 
     try {
-      console.log("Submitting form data:", formData);
-
+      const token = await user?.getIdToken();
       const response = await fetch("/api/family-trees", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify(formData),

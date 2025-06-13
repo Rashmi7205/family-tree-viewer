@@ -7,7 +7,7 @@ import { TreeViewer } from "@/components/family-tree/tree-viewer";
 import { AddMemberModal } from "@/components/family-tree/add-member-modal";
 import { AddRelationshipModal } from "@/components/family-tree/add-relationship-modal";
 import { TreeEditModal } from "@/components/family-tree/tree-edit-modal";
-import { useAuth } from "@/contexts/auth-context";
+
 import {
   ArrowLeft,
   Plus,
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../../../lib/auth/auth-context";
 
 interface Member {
   id: string;
@@ -65,7 +66,7 @@ export default function FamilyTreePage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/login");
+      router.push("/auth/signin");
       return;
     }
     fetchFamilyTree();
@@ -73,8 +74,11 @@ export default function FamilyTreePage() {
 
   const fetchFamilyTree = async () => {
     try {
+      const token = await user?.getIdToken();
       const response = await fetch(`/api/family-trees/${params.id}`, {
-        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (response.ok) {
         const data = await response.json();
@@ -95,12 +99,13 @@ export default function FamilyTreePage() {
 
   const handleMemberUpdate = async (member: Member) => {
     try {
+      const token = await user?.getIdToken();
       const response = await fetch(
         `/api/family-trees/${params.id}/members/${member.id}`,
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           credentials: "include",
           body: JSON.stringify(member),
@@ -120,10 +125,14 @@ export default function FamilyTreePage() {
 
   const handleMemberDelete = async (memberId: string) => {
     try {
+      const token = await user?.getIdToken();
       const response = await fetch(
         `/api/family-trees/${params.id}/members/${memberId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
         }
       );

@@ -34,6 +34,7 @@ import { Camera, Save, X, User, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../../lib/auth/auth-context";
 
 interface Member {
   id: string;
@@ -91,6 +92,7 @@ export function AddMemberModal({
       resetForm();
     }
   }, [isOpen]);
+  const {user} = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,13 +105,13 @@ export function AddMemberModal({
         birthDate: birthDate ? birthDate.toISOString() : undefined,
         deathDate: deathDate ? deathDate.toISOString() : undefined,
       };
-
+      const token = await user?.getIdToken();
       const response = await fetch(
         `/api/family-trees/${familyTreeId}/members`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           credentials: "include",
           body: JSON.stringify(memberData),

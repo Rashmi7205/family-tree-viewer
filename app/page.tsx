@@ -15,6 +15,7 @@ import {
   Download,
   Smartphone,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -29,47 +30,56 @@ export default function HomePage() {
               </h1>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/demo">
-                <Button variant="outline">View Demo</Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link href="/register">
+              <Link href="/auth/signup">
                 <Button>Get Started</Button>
               </Link>
             </div>
           </div>
         </div>
       </header>
-
       <main>
         {/* Hero Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Build Your Family Tree
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Create, visualize, and share your family history with our
-              intuitive family tree builder. Connect generations, preserve
-              memories, and discover your heritage.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Start Building Your Tree
-                </Button>
-              </Link>
-              <Link href="/demo">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
+        <section className="bg-white dark:bg-gray-900 lg:grid lg:grid-cols-2 lg:min-h-screen">
+          {/* Text Content */}
+          <div className="flex items-center justify-center px-4 py-16 sm:px-6 lg:px-12 lg:py-32">
+            <div className="max-w-xl text-center lg:text-left">
+              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
+                Discover Your <span className="text-green-600">Family</span>{" "}
+                Legacy
+              </h1>
+
+              <p className="mt-6 text-gray-700 dark:text-gray-300 text-base sm:text-lg">
+                Modern family tree builder—connect generations, preserve
+                memories, share your heritage.
+              </p>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link
+                  href="/register"
+                  className="rounded-md bg-green-600 px-6 py-3 text-white font-medium hover:bg-green-700 transition"
                 >
-                  View Live Demo
-                </Button>
-              </Link>
+                  Start Building
+                </Link>
+                <Link
+                  href="/demo"
+                  className="rounded-md border border-gray-300 dark:border-gray-700 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                >
+                  view demo
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side Image - Only visible on lg+ */}
+          <div className="hidden lg:flex items-center justify-center">
+            <div className="w-[90%] h-[500px] relative">
+              <Image
+                src="/hero-image.jpeg" // Ensure this file is in /public
+                alt="Family Tree Illustration"
+                fill
+                className="object-contain rounded-lg shadow-lg"
+                priority
+              />
             </div>
           </div>
         </section>
@@ -235,7 +245,6 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

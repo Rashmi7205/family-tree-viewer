@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TreeCard } from "@/components/family-tree/tree-card";
 import { CreateTreeModal } from "@/components/family-tree/create-tree-modal";
-import { useAuth } from "@/contexts/auth-context";
+
 import {
   Plus,
   Search,
@@ -30,6 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import { useAuth } from "../../lib/auth/auth-context";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
+import { Icons } from "../../components/icons";
 
 interface FamilyTree {
   id: string;
@@ -58,18 +62,18 @@ export default function TreesPage() {
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login");
+    if (!authLoading && !user) {
+      router.push("/auth/signin");
       return;
     }
-    if (isAuthenticated) {
+    if (user) {
       fetchTrees();
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     filterAndSortTrees();
@@ -77,8 +81,12 @@ export default function TreesPage() {
 
   const fetchTrees = async () => {
     try {
+      const token = user?.accessToken;
       const response = await fetch("/api/family-trees", {
-        credentials: "include",
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (response.ok) {
         const data = await response.json();
@@ -179,7 +187,7 @@ export default function TreesPage() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return null; // Will redirect to login
   }
 
@@ -212,9 +220,41 @@ export default function TreesPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 New Tree
               </Button>
-              <Button variant="outline" onClick={logout}>
-                Sign Out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={user?.photoURL || ""}
+                        alt={user?.displayName || ""}
+                      />
+                      <AvatarFallback>
+                        {user?.displayName?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user?.displayName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <Icons.logOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

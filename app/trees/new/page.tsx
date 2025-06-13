@@ -42,7 +42,7 @@ export default function NewTreePage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/login");
+      router.push("/auth/signin");
     }
   }, [user, router]);
 

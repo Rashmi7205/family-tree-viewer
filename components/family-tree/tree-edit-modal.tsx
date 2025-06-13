@@ -28,6 +28,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "../../lib/auth/auth-context";
+import { headers } from "next/headers";
 
 interface FamilyTree {
   id: string;
@@ -62,6 +64,7 @@ export function TreeEditModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const {user} = useAuth();
 
   useEffect(() => {
     if (tree && isOpen) {
@@ -82,10 +85,11 @@ export function TreeEditModal({
     setIsLoading(true);
 
     try {
+      const token = user?.getIdToken();
       const response = await fetch(`/api/family-trees/${tree.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -112,9 +116,12 @@ export function TreeEditModal({
     if (!tree || !onDelete) return;
 
     try {
+      const token = user?.getIdToken();
       const response = await fetch(`/api/family-trees/${tree.id}`, {
         method: "DELETE",
-        credentials: "include",
+        headers: {
+          Authorization:`Bearer ${token}`
+        },
       });
 
       if (!response.ok) {

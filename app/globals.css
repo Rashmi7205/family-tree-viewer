@@ -2,85 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 @layer base {
   :root {
+    /* Modern Green Theme Colors */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 142 84% 8%;
+
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 142 84% 8%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --popover-foreground: 142 84% 8%;
+
+    --primary: 142 76% 36%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
+
+    --secondary: 142 30% 95%;
+    --secondary-foreground: 142 84% 8%;
+
+    --muted: 142 30% 96%;
+    --muted-foreground: 142 10% 45%;
+
+    --accent: 142 30% 90%;
+    --accent-foreground: 142 84% 8%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --border: 142 30% 88%;
+    --input: 142 30% 88%;
+    --ring: 142 76% 36%;
+
+    --radius: 0.75rem;
+
+    /* Custom Green Shades */
+    --green-50: 142 76% 97%;
+    --green-100: 142 76% 94%;
+    --green-200: 142 76% 87%;
+    --green-300: 142 76% 74%;
+    --green-400: 142 76% 57%;
+    --green-500: 142 76% 36%;
+    --green-600: 142 76% 29%;
+    --green-700: 142 76% 22%;
+    --green-800: 142 76% 15%;
+    --green-900: 142 76% 8%;
+
+    /* Gradient Variables */
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 76% 29%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(142 30% 95%) 0%, hsl(142 30% 90%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(142 76% 57%) 0%, hsl(142 76% 36%) 100%);
   }
+
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 142 84% 4%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+
+    --card: 142 84% 4%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+
+    --popover: 142 84% 4%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
+
+    --primary: 142 76% 36%;
+    --primary-foreground: 142 84% 4%;
+
+    --secondary: 142 84% 8%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+
+    --muted: 142 84% 8%;
+    --muted-foreground: 142 30% 60%;
+
+    --accent: 142 84% 8%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --border: 142 84% 8%;
+    --input: 142 84% 8%;
+    --ring: 142 76% 36%;
   }
 }
 
@@ -88,7 +88,323 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+@layer components {
+  /* Modern Glass Effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/10;
+  }
+
+  /* Gradient Backgrounds */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  /* Modern Card Styles */
+  .modern-card {
+    @apply bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all duration-300;
+  }
+
+  .modern-card-hover {
+    @apply hover:scale-[1.02] hover:-translate-y-1;
+  }
+
+  /* Smooth Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+  }
+
+  /* Tree Viewer Smooth Animations */
+  .tree-node {
+    @apply transition-all duration-500 ease-in-out;
+  }
+
+  .tree-node:hover {
+    @apply scale-105 shadow-2xl;
+  }
+
+  .tree-connection {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Responsive Grid */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Modern Button Styles */
+  .btn-modern {
+    @apply relative overflow-hidden bg-gradient-to-r from-green-500 to-green-600 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-modern::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-300;
+  }
+
+  .btn-modern:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Modern Input Styles */
+  .input-modern {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all duration-300 bg-white/50 backdrop-blur-sm;
+  }
+
+  /* Loading Animations */
+  .loading-pulse {
+    @apply animate-pulse bg-gradient-to-r from-green-200 via-green-300 to-green-200 bg-[length:200%_100%];
+    animation: shimmer 2s infinite;
+  }
+
+  /* Status Indicators */
+  .status-living {
+    @apply bg-gradient-to-r from-green-400 to-green-500 text-white;
+  }
+
+  .status-deceased {
+    @apply bg-gradient-to-r from-gray-400 to-gray-500 text-white;
+  }
+
+  /* Modern Shadows */
+  .shadow-modern {
+    box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.1), 0 10px 10px -5px rgba(34, 197, 94, 0.04);
+  }
+
+  .shadow-modern-lg {
+    box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.1), 0 10px 10px -5px rgba(34, 197, 94, 0.04);
+  }
+}
+
+@layer utilities {
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent;
+  }
+
+  /* Responsive Text */
+  .text-responsive-xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl xl:text-5xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+
+  .text-responsive-base {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+
+  /* Responsive Spacing */
+  .spacing-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  .margin-responsive {
+    @apply m-4 sm:m-6 lg:m-8;
+  }
+
+  /* Container Responsive */
+  .container-responsive {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceGentle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Tree Viewer Specific Styles */
+.tree-container {
+  @apply relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50;
+}
+
+.tree-svg {
+  @apply transition-all duration-500 ease-in-out;
+}
+
+.tree-node-card {
+  @apply transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl;
+}
+
+.tree-connection-line {
+  @apply stroke-green-400 stroke-2 transition-all duration-300;
+}
+
+.tree-connection-line:hover {
+  @apply stroke-green-600 stroke-3;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .tree-node-card {
+    @apply scale-90;
+  }
+
+  .modern-card {
+    @apply rounded-xl;
+  }
+
+  .btn-modern {
+    @apply py-2 px-4 text-sm;
+  }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tree-node-card {
+    @apply scale-95;
+  }
+}
+
+/* Desktop Optimizations */
+@media (min-width: 1025px) {
+  .tree-node-card {
+    @apply scale-100;
+  }
+
+  .modern-card-hover {
+    @apply hover:scale-[1.03] hover:-translate-y-2;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .tree-container {
+    @apply bg-white;
+  }
+
+  .modern-card {
+    @apply shadow-none border border-gray-300;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .modern-card {
+    @apply border-2 border-green-600;
+  }
+
+  .tree-connection-line {
+    @apply stroke-green-800 stroke-3;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .tree-node-card {
+    @apply hover:scale-100 hover:shadow-lg;
   }
 }

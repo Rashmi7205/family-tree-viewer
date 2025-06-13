@@ -1,18 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
-import { requireAuth } from "@/lib/auth";
 import FamilyTree from "@/models/FamilyTree";
 import Relationship from "@/models/Relationship";
 import Member from "@/models/Member";
 import { logAudit } from "@/lib/audit";
+import User from "../../../../../models/User";
+import { getTokenFromRequest, verifyFirebaseToken } from "../../../../../lib/auth/verify-token";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
     await connectDB();
-    const user = await requireAuth(request);
+    const user = await User.findOne({ uid: decodedToken.user_id });
 
     // Check if the family tree exists and belongs to the user
     const familyTree = await FamilyTree.findOne({
@@ -78,8 +88,17 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+     const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
     await connectDB();
-    const user = await requireAuth(request);
+    const user = await User.findOne({ uid: decodedToken.user_id });
 
     // Check if the family tree exists and belongs to the user
     const familyTree = await FamilyTree.findOne({

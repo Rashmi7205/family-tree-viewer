@@ -4,8 +4,12 @@ import connectDB from "@/lib/mongodb";
 import FamilyTree from "@/models/FamilyTree";
 import Member from "@/models/Member";
 import Relationship from "@/models/Relationship";
-import { requireAuth } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import {
+  getTokenFromRequest,
+  verifyFirebaseToken,
+} from "../../../../../../lib/auth/verify-token";
+import User from "../../../../../../models/User";
 
 const updateMemberSchema = z.object({
   firstName: z.string().min(1),
@@ -22,8 +26,17 @@ export async function PUT(
   { params }: { params: { id: string; memberId: string } }
 ) {
   try {
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
     await connectDB();
-    const user = await requireAuth(request);
+    const user = await User.findOne({ uid: decodedToken.user_id });
     const body = await request.json();
     const data = updateMemberSchema.parse(body);
 
@@ -85,8 +98,17 @@ export async function DELETE(
   { params }: { params: { id: string; memberId: string } }
 ) {
   try {
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decodedToken = await verifyFirebaseToken(token);
+    if (!decodedToken) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
     await connectDB();
-    const user = await requireAuth(request);
+    const user = await User.findOne({ uid: decodedToken.user_id });
 
     // Verify user owns the family tree
     const tree = await FamilyTree.findOne({
