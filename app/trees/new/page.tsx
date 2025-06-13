@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "@/contexts/auth-context";
 import {
   ArrowLeft,
   Save,
@@ -28,6 +27,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
+import { useAuth } from "../../../lib/auth/auth-context";
 
 export default function NewTreePage() {
   const [formData, setFormData] = useState({
@@ -52,10 +52,11 @@ export default function NewTreePage() {
     setIsLoading(true);
 
     try {
+      const  token = user?.getIdToken();
       const response = await fetch("/api/family-trees", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
