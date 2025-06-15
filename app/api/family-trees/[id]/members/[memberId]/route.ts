@@ -10,15 +10,18 @@ import {
   verifyFirebaseToken,
 } from "../../../../../../lib/auth/verify-token";
 import User from "../../../../../../models/User";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { v4 as uuidv4 } from "uuid";
+import { existsSync } from "fs";
 
 const updateMemberSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  birthDate: z.string().optional(),
-  deathDate: z.string().optional(),
-  gender: z.string().optional(),
-  profileImageUrl: z.string().optional(),
-  bio: z.string().optional(),
+  birthDate: z.string().nullable().optional(),
+  deathDate: z.string().nullable().optional(),
+  gender: z.string().nullable().optional(),
+  bio: z.string().nullable().optional(),
 });
 
 export async function PUT(
@@ -37,8 +40,26 @@ export async function PUT(
     }
     await connectDB();
     const user = await User.findOne({ uid: decodedToken.user_id });
-    const body = await request.json();
-    const data = updateMemberSchema.parse(body);
+
+    // Handle multipart form data
+    const formData = await request.formData();
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const birthDate = formData.get("birthDate") as string | null;
+    const deathDate = formData.get("deathDate") as string | null;
+    const gender = formData.get("gender") as string | null;
+    const bio = formData.get("bio") as string | null;
+    const profileImage = formData.get("profileImage") as File | null;
+
+    // Validate required fields
+    const data = updateMemberSchema.parse({
+      firstName,
+      lastName,
+      birthDate: birthDate || null,
+      deathDate: deathDate || null,
+      gender: gender || null,
+      bio: bio || null,
+    });
 
     // Verify user owns the family tree
     const tree = await FamilyTree.findOne({
@@ -66,10 +87,40 @@ export async function PUT(
       );
     }
 
+    let profileImageUrl: string | undefined;
+
+    // Handle image upload if present
+    if (profileImage) {
+      const bytes = await profileImage.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      // Create unique filename
+      const uniqueId = uuidv4();
+      const fileExtension = profileImage.name.split(".").pop();
+      const fileName = `${uniqueId}.${fileExtension}`;
+
+      // Define upload path
+      const uploadDir = join(process.cwd(), "public", "uploads");
+
+      // Create uploads directory if it doesn't exist
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true });
+      }
+
+      const filePath = join(uploadDir, fileName);
+
+      // Save the file
+      await writeFile(filePath, buffer);
+
+      // Set the URL for the image
+      profileImageUrl = `/uploads/${fileName}`;
+    }
+
     const memberData = {
       ...data,
       birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
       deathDate: data.deathDate ? new Date(data.deathDate) : undefined,
+      ...(profileImageUrl && { profileImageUrl }), // Only include if new image was uploaded
     };
 
     const updatedMember = await Member.findByIdAndUpdate(
@@ -86,6 +137,15 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Update member error:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: "Validation failed",
+          details: error.errors,
+        },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to update member" },
       { status: 500 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Tree from "react-d3-tree";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { MemberDetailModal } from "./member-detail-modal";
 import { MemberEditModal } from "./member-edit-modal";
 import { ModernTreeCard } from "./modern-tree-card";
+import { useToast } from "@/components/ui/use-toast";
+import html2canvas from "html2canvas";
 
 interface Member {
   id: string;
@@ -88,11 +90,12 @@ export function TreeViewer({
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [memberForEdit, setMemberForEdit] = useState<Member | null>(null);
-  const treeContainer = useRef<HTMLDivElement>(null);
+  const treeContainerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (treeContainer.current) {
-      const dimensions = treeContainer.current.getBoundingClientRect();
+    if (treeContainerRef.current) {
+      const dimensions = treeContainerRef.current.getBoundingClientRect();
       setTranslate({
         x: dimensions.width / 2,
         y: 100,
@@ -365,8 +368,8 @@ export function TreeViewer({
 
   const resetView = () => {
     setZoom(0.8);
-    if (treeContainer.current) {
-      const dimensions = treeContainer.current.getBoundingClientRect();
+    if (treeContainerRef.current) {
+      const dimensions = treeContainerRef.current.getBoundingClientRect();
       setTranslate({
         x: dimensions.width / 2,
         y: 100,
@@ -433,6 +436,52 @@ export function TreeViewer({
     );
   };
 
+  const handleExport = async () => {
+    if (!treeContainerRef.current) return;
+
+    try {
+      toast({
+        title: "Exporting tree...",
+        description: "Please wait while we generate the image.",
+      });
+
+      // Use html2canvas to capture the tree
+      const canvas = await html2canvas(treeContainerRef.current, {
+        scale: 2, // Higher quality
+        backgroundColor: "#ffffff",
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        foreignObjectRendering: true,
+      });
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = `family-tree-${
+          new Date().toISOString().split("T")[0]
+        }.png`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      }, "image/png");
+
+      toast({
+        title: "Export successful",
+        description: "Your family tree has been exported as an image.",
+      });
+    } catch (error) {
+      console.error("Error exporting tree:", error);
+      toast({
+        title: "Export failed",
+        description: "There was an error exporting the tree. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!treeData) {
     return (
       <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
@@ -489,8 +538,14 @@ export function TreeViewer({
               <Button variant="outline" size="sm" onClick={handleShare}>
                 <Share2 className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                className="bg-white/90 backdrop-blur-sm hover:bg-white"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Tree
               </Button>
             </>
           )}
@@ -508,12 +563,22 @@ export function TreeViewer({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Main tree visualization */}
         <div className="lg:col-span-3">
-          <Card>
-            <CardContent className="p-0">
+          <Card className="w-full h-full">
+            <CardContent className="p-0 relative">
+              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  className="bg-white/90 backdrop-blur-sm hover:bg-white"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Tree
+                </Button>
+              </div>
               <div
-                ref={treeContainer}
-                className="h-96 lg:h-[700px] w-full relative"
-                style={{ background: "#f8fafc" }}
+                ref={treeContainerRef}
+                className="w-full h-[calc(100vh-200px)]"
               >
                 <Tree
                   data={treeData}
@@ -535,28 +600,6 @@ export function TreeViewer({
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1 text-sm font-medium">
                   Zoom: {Math.round(zoom * 100)}%
                 </div>
-
-                {/* Instructions overlay */}
-                {/* <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-sm max-w-xs">
-                  <div className="font-medium mb-1">How to interact:</div>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div>• Click & drag to pan</div>
-                    <div>• Mouse wheel to zoom</div>
-                    <div>• Click member cards for details</div>
-                    {isOwner && <div>• Click edit button to modify</div>}
-                  </div>
-                </div> */}
-
-                {/* Relationship Legend */}
-                {/* <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-sm max-w-xs">
-                  <div className="font-medium mb-1">Relationships:</div>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div>• Vertical lines: Parent-Child</div>
-                    <div>• Horizontal: Spouses</div>
-                    <div>• Same level: Siblings</div>
-                    <div>• Different gradients: Family branches</div>
-                  </div>
-                </div> */}
               </div>
             </CardContent>
           </Card>

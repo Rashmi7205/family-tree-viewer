@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "../../lib/auth/auth-context";
+import toast from "react-hot-toast";
+import { Icons } from "../icons";
 
 interface Member {
   id: string;
@@ -73,6 +75,9 @@ export function AddMemberModal({
   const [deathDate, setDeathDate] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setFormData({
@@ -85,6 +90,8 @@ export function AddMemberModal({
     setBirthDate(undefined);
     setDeathDate(undefined);
     setError("");
+    setSelectedImage(null);
+    setPreviewUrl("");
   };
 
   useEffect(() => {
@@ -92,7 +99,7 @@ export function AddMemberModal({
       resetForm();
     }
   }, [isOpen]);
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,11 +107,21 @@ export function AddMemberModal({
     setIsLoading(true);
 
     try {
-      const memberData = {
-        ...formData,
-        birthDate: birthDate ? birthDate.toISOString() : undefined,
-        deathDate: deathDate ? deathDate.toISOString() : undefined,
-      };
+      const memberData = new FormData();
+      memberData.append("firstName", formData.firstName);
+      memberData.append("lastName", formData.lastName);
+      memberData.append("gender", formData.gender);
+      memberData.append("bio", formData.bio);
+      if (birthDate) {
+        memberData.append("birthDate", birthDate.toISOString());
+      }
+      if (deathDate) {
+        memberData.append("deathDate", deathDate.toISOString());
+      }
+      if (selectedImage) {
+        memberData.append("profileImage", selectedImage);
+      }
+
       const token = await user?.getIdToken();
       const response = await fetch(
         `/api/family-trees/${familyTreeId}/members`,
@@ -114,7 +131,7 @@ export function AddMemberModal({
             Authorization: `Bearer ${token}`,
           },
           credentials: "include",
-          body: JSON.stringify(memberData),
+          body: memberData,
         }
       );
 
@@ -126,8 +143,10 @@ export function AddMemberModal({
       const newMember = await response.json();
       onSuccess(newMember);
       onClose();
+      toast.success("Family member added successfully");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add member");
+      toast.error(err instanceof Error ? err.message : "Failed to add member");
     } finally {
       setIsLoading(false);
     }
@@ -150,6 +169,34 @@ export function AddMemberModal({
     if (!isLoading) {
       resetForm();
       onClose();
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+
+      setSelectedImage(file);
+      // Create preview URL
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewUrl(imageUrl);
+      setFormData((prev) => ({
+        ...prev,
+        profileImageUrl: imageUrl,
+      }));
     }
   };
 
@@ -180,6 +227,7 @@ export function AddMemberModal({
                 <Avatar className="h-20 w-20">
                   <AvatarImage
                     src={
+                      previewUrl ||
                       formData.profileImageUrl ||
                       "/placeholder.svg?height=80&width=80"
                     }
@@ -191,7 +239,7 @@ export function AddMemberModal({
                 </Avatar>
 
                 <div className="flex-1">
-                  <Label htmlFor="profileImageUrl">Profile Photo URL</Label>
+                  <Label htmlFor="profileImageUrl">Profile Photo</Label>
                   <div className="flex gap-2 mt-1">
                     <Input
                       id="profileImageUrl"
@@ -202,17 +250,25 @@ export function AddMemberModal({
                       }
                       disabled={isLoading}
                     />
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
                       disabled={isLoading}
+                      onClick={handleImageClick}
                     >
                       <Camera className="h-4 w-4" />
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Enter a URL to a photo or upload an image
+                    Upload an image (max 5MB) or enter a URL
                   </p>
                 </div>
               </div>

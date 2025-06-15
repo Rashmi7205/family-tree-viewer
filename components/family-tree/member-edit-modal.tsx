@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +43,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import toast from "react-hot-toast";
+import { Icons } from "@/components/icons";
 
 interface Member {
   id: string;
@@ -77,6 +79,9 @@ export function MemberEditModal({
   const [deathDate, setDeathDate] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (member) {
@@ -85,6 +90,7 @@ export function MemberEditModal({
       });
       setBirthDate(member.birthDate ? new Date(member.birthDate) : undefined);
       setDeathDate(member.deathDate ? new Date(member.deathDate) : undefined);
+      setPreviewUrl(member.profileImageUrl || "");
     } else if (isCreating) {
       setFormData({
         firstName: "",
@@ -95,6 +101,7 @@ export function MemberEditModal({
       });
       setBirthDate(undefined);
       setDeathDate(undefined);
+      setPreviewUrl("");
     }
   }, [member, isCreating, isOpen]);
 
@@ -103,6 +110,27 @@ export function MemberEditModal({
     setIsLoading(true);
 
     try {
+      const memberFormData = new FormData();
+      memberFormData.append("firstName", formData.firstName || "");
+      memberFormData.append("lastName", formData.lastName || "");
+      if (birthDate) {
+        memberFormData.append("birthDate", birthDate.toISOString());
+      }
+      if (deathDate) {
+        memberFormData.append("deathDate", deathDate.toISOString());
+      }
+      if (formData.gender) {
+        memberFormData.append("gender", formData.gender);
+      }
+      if (formData.bio) {
+        memberFormData.append("bio", formData.bio);
+      }
+      if (selectedImage) {
+        memberFormData.append("profileImage", selectedImage);
+      } else if (formData.profileImageUrl) {
+        memberFormData.append("profileImageUrl", formData.profileImageUrl);
+      }
+
       const memberData: Member = {
         id: member?.id || "",
         firstName: formData.firstName || "",
@@ -114,9 +142,10 @@ export function MemberEditModal({
         bio: formData.bio || undefined,
       };
 
-      onSave(memberData);
+      onSave({ ...memberData, formData: memberFormData });
     } catch (error) {
       console.error("Error saving member:", error);
+      toast.error("Failed to save member. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -140,6 +169,34 @@ export function MemberEditModal({
     const firstName = formData.firstName || "";
     const lastName = formData.lastName || "";
     return `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase();
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+
+      setSelectedImage(file);
+      // Create preview URL
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewUrl(imageUrl);
+      setFormData((prev) => ({
+        ...prev,
+        profileImageUrl: imageUrl,
+      }));
+    }
   };
 
   return (
@@ -167,6 +224,7 @@ export function MemberEditModal({
                   <Avatar className="h-20 w-20">
                     <AvatarImage
                       src={
+                        previewUrl ||
                         formData.profileImageUrl ||
                         "/placeholder.svg?height=80&width=80"
                       }
@@ -178,7 +236,7 @@ export function MemberEditModal({
                   </Avatar>
 
                   <div className="flex-1">
-                    <Label htmlFor="profileImageUrl">Profile Photo URL</Label>
+                    <Label htmlFor="profileImageUrl">Profile Photo</Label>
                     <div className="flex gap-2 mt-1">
                       <Input
                         id="profileImageUrl"
@@ -187,13 +245,27 @@ export function MemberEditModal({
                         onChange={(e) =>
                           handleInputChange("profileImageUrl", e.target.value)
                         }
+                        disabled={isLoading}
                       />
-                      <Button type="button" variant="outline" size="icon">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        disabled={isLoading}
+                        onClick={handleImageClick}
+                      >
                         <Camera className="h-4 w-4" />
                       </Button>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Enter a URL to a photo or upload an image
+                      Upload an image (max 5MB) or enter a URL
                     </p>
                   </div>
                 </div>
@@ -353,6 +425,7 @@ export function MemberEditModal({
                     type="button"
                     variant="destructive"
                     onClick={() => setShowDeleteDialog(true)}
+                    disabled={isLoading}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Member
@@ -360,12 +433,21 @@ export function MemberEditModal({
                 )}
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isLoading}
+                >
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? (
+                    <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   {isLoading
                     ? "Saving..."
                     : isCreating

@@ -136,7 +136,6 @@ export function ModernTreeCard({
                 </AvatarFallback>
               </Avatar>
             </div>
-
             {isLiving && (
               <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-1">
                 <Heart className="h-3 w-3 text-red-400" fill="currentColor" />
@@ -215,16 +214,16 @@ export function ModernTreeCard({
               <span className="text-sm truncate">{member.location}</span>
             </div>
           )}
-
-          {/* Bio Preview */}
-          {member.bio && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mt-3">
-              <p className="text-sm text-white/90 line-clamp-3 leading-relaxed">
-                {member.bio}
-              </p>
-            </div>
-          )}
         </div>
+
+        {/* Bio Preview */}
+        {member.bio && (
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mt-3">
+            <p className="text-sm text-white/90 line-clamp-3 leading-relaxed">
+              {member.bio}
+            </p>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-4 pt-4 border-t border-white/20">

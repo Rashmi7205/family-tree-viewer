@@ -23,7 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useToast } from "@/components/ui/use-toast";
+import toast from "react-hot-toast";
 import { Icons } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import AddressSelector from "@/components/profile/address-selector";
@@ -60,7 +60,6 @@ export default function ProfileCompletionStep({
   onCompleted,
 }: ProfileCompletionStepProps) {
   const { user, refreshUserProfile } = useAuth();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
@@ -77,14 +76,9 @@ export default function ProfileCompletionStep({
 
   const watchedDate = watch("dateOfBirth");
 
-
   const onSubmit = async (data: ProfileFormValues) => {
     if (!user || !selectedAddress) {
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Please complete all fields including address selection.",
-      });
+      toast.error("Please complete all fields including address selection.");
       return;
     }
 
@@ -109,20 +103,16 @@ export default function ProfileCompletionStep({
         throw new Error(error.error || "Failed to complete profile");
       }
 
-      toast({
-        title: "Profile completed",
-        description: "Your profile has been completed successfully.",
-      });
+      toast.success("Your profile has been completed successfully.");
 
       await refreshUserProfile();
       onCompleted();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Profile completion failed",
-        description:
-          error instanceof Error ? error.message : "Please try again later.",
-      });
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Profile completion failed. Please try again later.";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

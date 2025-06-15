@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "../../../lib/auth/auth-context";
+import { toast } from "@/components/ui/use-toast";
 
 interface Member {
   id: string;
@@ -97,7 +98,9 @@ export default function FamilyTreePage() {
     }
   };
 
-  const handleMemberUpdate = async (member: Member) => {
+  const handleMemberUpdate = async (
+    member: Member & { formData?: FormData }
+  ) => {
     try {
       const token = await user?.getIdToken();
       const response = await fetch(
@@ -108,7 +111,7 @@ export default function FamilyTreePage() {
             Authorization: `Bearer ${token}`,
           },
           credentials: "include",
-          body: JSON.stringify(member),
+          body: member.formData || new FormData(),
         }
       );
 
@@ -182,18 +185,62 @@ export default function FamilyTreePage() {
   };
 
   const handleShare = async () => {
-    if (!familyTree) return;
-
-    const shareUrl = `${window.location.origin}/public/${familyTree.shareLink}`;
-    if (navigator.share) {
-      await navigator.share({
-        title: familyTree.name,
-        text: `Check out this family tree: ${familyTree.name}`,
-        url: shareUrl,
+    try {
+      const response = await fetch(`/api/family-trees/${params.id}/share`, {
+        method: "POST",
       });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      // You could add a toast notification here
+
+      if (!response.ok) {
+        throw new Error("Failed to generate share link");
+      }
+
+      const { shareLink } = await response.json();
+      const publicUrl = `${window.location.origin}/public/trees/${shareLink}`;
+
+      // Try to use the Web Share API if available
+      if (navigator.share) {
+        await navigator.share({
+          title: familyTree?.name,
+          text: `Check out this family tree: ${familyTree?.name}`,
+          url: publicUrl,
+        });
+      } else {
+        // Fallback to clipboard copy
+        await navigator.clipboard.writeText(publicUrl);
+        toast({
+          title: "Link copied!",
+          description: "The public link has been copied to your clipboard.",
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing tree:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate share link. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewPublic = async () => {
+    try {
+      const response = await fetch(`/api/family-trees/${params.id}/share`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate share link");
+      }
+
+      const { shareLink } = await response.json();
+      window.open(`/public/trees/${shareLink}`, "_blank");
+    } catch (error) {
+      console.error("Error opening public view:", error);
+      toast({
+        title: "Error",
+        description: "Failed to open public view. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -274,24 +321,28 @@ export default function FamilyTreePage() {
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
-              {familyTree.isPublic && (
-                <Button variant="outline" size="sm" onClick={handleShare}>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewPublic}
+                className="bg-white/90 backdrop-blur-sm hover:bg-white"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Public
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="bg-white/90 backdrop-blur-sm hover:bg-white"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
-              {familyTree.isPublic && (
-                <Link href={`/public/${familyTree.shareLink}`} target="_blank">
-                  <Button variant="outline" size="sm">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Public View
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
         </div>

@@ -3,28 +3,16 @@ import connectDB from "@/lib/mongodb";
 import FamilyTree from "@/models/FamilyTree";
 import Member from "@/models/Member";
 import Relationship from "@/models/Relationship";
-import User from "@/models/User";
-import { getTokenFromRequest, verifyFirebaseToken } from "../../../../../lib/auth/verify-token";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shareLink: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const token = getTokenFromRequest(request);
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decodedToken = await verifyFirebaseToken(token);
-    if (!decodedToken) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
     await connectDB();
 
-
     const tree = await FamilyTree.findOne({
-      shareLink: params.shareLink,
+      _id: params.id,
       isPublic: true,
     }).lean();
 
@@ -35,15 +23,10 @@ export async function GET(
       );
     }
 
-    // Get user info
-    const user = await User.findById(tree.userId).select("displayName").lean();
-
     // Get members and relationships
-    const members = await Member.find({
-      familyTreeId: tree._id.toString(),
-    }).lean();
+    const members = await Member.find({ familyTreeId: params.id }).lean();
     const relationships = await Relationship.find({
-      familyTreeId: tree._id.toString(),
+      familyTreeId: params.id,
     }).lean();
 
     // Populate relationship members
@@ -66,9 +49,6 @@ export async function GET(
       id: tree._id.toString(),
       members: members.map((m) => ({ ...m, id: m._id.toString() })),
       relationships: populatedRelationships,
-      user: {
-        displayName: user?.displayName || "Unknown",
-      },
     };
 
     return NextResponse.json(result);
