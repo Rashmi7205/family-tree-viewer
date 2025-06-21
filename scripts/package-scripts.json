@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "setup": "chmod +x scripts/setup.sh && ./scripts/setup.sh",
+    "db:seed": "node scripts/seed-database.js",
+    "db:reset": "node scripts/reset-database.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  }
+}
